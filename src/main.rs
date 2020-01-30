@@ -18,18 +18,23 @@ fn disburse_random(accounts: &[Arc<Mutex<i64>>])
 
     println!("Attempting {} -> {}", from, to);
 
-    let mut from_account = accounts[from].lock().unwrap();
+    let amt = {
+        let mut from_account = accounts[from].lock().unwrap();
+
+        let amt = rand::thread_rng().gen_range(0, *from_account+1);
+        *from_account -= amt;
+        amt
+    };
+
     let mut to_account = accounts[to].lock().unwrap();
-    let amt = rand::thread_rng().gen_range(0, *from_account);
-    *from_account -= amt;
     *to_account += amt;
 
-    println!("{} -{}> {}", from, amt, to);
+    println!("{} -({})-> {}", from, amt, to);
 }
 
 fn main() {
     let accounts = vec![
-        Arc::new(Mutex::new(0i64)); N_ACCTS
+        Arc::new(Mutex::new(10i64)); N_ACCTS
     ];
     let mut threads = vec![];
 
